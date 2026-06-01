@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Garden Tech">
+<meta name="theme-color" content="#0d1f0e">
+<title>Garden Tech — Soil Monitor</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #0d1f0e;
+    color: #e8f5e8;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    padding: 0;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .app {
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: #0d1f0e;
+    position: relative;
+  }
+
+  .header {
+    padding: 20px 20px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 0.5px solid rgba(255,255,255,0.08);
+  }
+
+  .logo { display: flex; align-items: center; gap: 10px; }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: #2d7a35; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .logo-text { font-size: 15px; font-weight: 600; color: #e8f5e8; letter-spacing: -0.3px; }
+  .logo-sub { font-size: 11px; color: #6b9e6e; letter-spacing: 0.5px; }
+
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+
+  .icon-btn {
+    width: 34px; height: 34px; border-radius: 8px;
+    border: 0.5px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #a8c9a8; font-size: 17px;
+    transition: background 0.15s;
+  }
+  .icon-btn:hover { background: rgba(255,255,255,0.08); }
+
+  .status-bar {
+    padding: 8px 20px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: #6b9e6e;
+    border-bottom: 0.5px solid rgba(255,255,255,0.06);
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    background: #3ecf4a; border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .tabs {
+    display: flex; padding: 12px 20px 0; gap: 4px;
+    border-bottom: 0.5px solid rgba(255,255,255,0.08);
+  }
+
+  .tab {
+    padding: 7px 14px; font-size: 13px; font-weight: 500;
+    color: #6b9e6e; cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .tab.active {
+    color: #a8e6a3;
+    border-bottom-color: #3ecf4a;
+    background: rgba(62,207,74,0.06);
+  }
+
+  .content { padding: 16px 20px 100px; }
+
+  .section-label {
+    font-size: 11px; font-weight: 500; letter-spacing: 1px;
+    color: #4a7a4e; text-transform: uppercase;
+    margin-bottom: 10px; margin-top: 20px;
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  .probe-card {
+    background: #142316;
+    border: 0.5px solid rgba(255,255,255,0.08);
+    border-radius: 14px; padding: 16px; margin-bottom: 12px;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  }
+
+  .probe-card.selected {
+    border-color: rgba(62,207,74,0.35);
+    background: #162a18;
+  }
+
+  .probe-header {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; margin-bottom: 12px;
+  }
+
+  .probe-name { font-size: 14px; font-weight: 600; color: #d4eed4; }
+  .probe-type { font-size: 11px; color: #6b9e6e; margin-top: 2px; }
+
+  .probe-badge {
+    font-size: 11px; font-weight: 500;
+    padding: 4px 9px; border-radius: 20px;
+  }
+
+  .badge-good { background: rgba(62,207,74,0.15); color: #3ecf4a; }
+  .badge-dry { background: rgba(239,143,39,0.15); color: #ef8f27; }
+  .badge-wet { background: rgba(56,138,221,0.15); color: #389add; }
+
+  .moisture-scale { position: relative; height: 28px; margin-bottom: 8px; }
+
+  .scale-track {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 100%; height: 8px; border-radius: 4px;
+    background: linear-gradient(to right,
+      #8B4513 0%, #c4813a 15%, #d4a952 28%,
+      #4a9e4a 38%, #2d7a35 55%,
+      #1a5e8a 72%, #0d3d6b 90%, #0a2a52 100%
+    );
+  }
+
+  .scale-ideal {
+    position: absolute; top: 0; left: 35%; width: 32%; height: 100%;
+    background: rgba(62,207,74,0.25);
+    border-left: 1.5px solid rgba(62,207,74,0.6);
+    border-right: 1.5px solid rgba(62,207,74,0.6);
+  }
+
+  .scale-needle {
+    position: absolute; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px; height: 16px;
+    background: white; border-radius: 50%;
+    border: 2px solid #0d1f0e;
+    box-shadow: 0 0 0 1.5px white;
+    transition: left 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 2;
+  }
+
+  .scale-labels {
+    display: flex; justify-content: space-between;
+    font-size: 10px; color: #4a7a4e; margin-top: 4px;
+  }
+
+  .moisture-pct {
+    font-family: 'DM Mono', monospace;
+    font-size: 28px; font-weight: 500; color: #a8e6a3;
+    line-height: 1; margin-bottom: 2px;
+  }
+  .moisture-pct span { font-size: 14px; color: #6b9e6e; }
+
+  .probe-meta {
+    display: flex; gap: 16px; margin-top: 10px;
+    padding-top: 10px;
+    border-top: 0.5px solid rgba(255,255,255,0.06);
+  }
+
+  .meta-item { font-size: 11px; color: #6b9e6e; }
+  .meta-item strong { display: block; color: #a8c9a8; font-weight: 500; font-size: 12px; }
+
+  .add-probe-btn {
+    width: 100%; padding: 14px;
+    border: 1.5px dashed rgba(255,255,255,0.12);
+    border-radius: 14px; background: transparent;
+    color: #4a7a4e; font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.15s;
+  }
+
+  .add-probe-btn:hover {
+    border-color: rgba(62,207,74,0.3);
+    color: #6b9e6e; background: rgba(62,207,74,0.04);
+  }
+
+  .activity-item {
+    display: flex; gap: 12px; padding: 10px 0;
+    border-bottom: 0.5px solid rgba(255,255,255,0.05);
+    align-items: flex-start;
+  }
+  .activity-item:last-child { border-bottom: none; }
+
+  .activity-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    margin-top: 5px; flex-shrink: 0;
+  }
+
+  .activity-text { font-size: 13px; color: #a8c9a8; flex: 1; }
+  .activity-time { font-size: 11px; color: #4a7a4e; font-family: 'DM Mono', monospace; white-space: nowrap; }
+
+  .detail-panel {
+    background: #142316;
+    border: 0.5px solid rgba(255,255,255,0.08);
+    border-radius: 14px; padding: 16px; margin-bottom: 12px;
+  }
+  .detail-panel h3 { font-size: 13px; font-weight: 500; color: #6b9e6e; margin-bottom: 12px; }
+  .chart-container { height: 100px; position: relative; margin-bottom: 4px; }
+
+  .notif-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; background: #142316;
+    border: 0.5px solid rgba(255,255,255,0.07);
+    border-radius: 10px; margin-bottom: 8px;
+  }
+
+  .notif-icon {
+    width: 36px; height: 36px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+
+  .notif-content { flex: 1; }
+  .notif-title { font-size: 13px; font-weight: 500; color: #d4eed4; margin-bottom: 2px; }
+  .notif-desc { font-size: 12px; color: #6b9e6e; }
+
+  .toggle {
+    width: 42px; height: 24px; border-radius: 12px;
+    background: #1e3a20; border: 0.5px solid rgba(255,255,255,0.1);
+    position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+  }
+  .toggle.on { background: #2d7a35; }
+  .toggle-knob {
+    position: absolute; top: 3px; left: 3px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #6b9e6e; transition: all 0.2s;
+  }
+  .toggle.on .toggle-knob { left: 21px; background: #a8e6a3; }
+
+  /* Pairing flow */
+  .pair-screen { padding: 24px 20px 100px; }
+
+  .pair-step {
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  .pair-step.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .pair-title { font-size: 20px; font-weight: 600; color: #d4eed4; margin-bottom: 6px; }
+  .pair-sub { font-size: 14px; color: #6b9e6e; margin-bottom: 24px; line-height: 1.5; }
+
+  .pair-illustration {
+    width: 80px; height: 80px; border-radius: 20px;
+    background: #142316; border: 0.5px solid rgba(62,207,74,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; margin: 0 auto 24px;
+  }
+
+  .probe-type-btn {
+    width: 100%; padding: 16px;
+    background: #142316;
+    border: 0.5px solid rgba(255,255,255,0.08);
+    border-radius: 12px; margin-bottom: 10px;
+    cursor: pointer; display: flex; align-items: center; gap: 14px;
+    transition: all 0.15s; color: #e8f5e8;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .probe-type-btn:hover, .probe-type-btn.selected {
+    border-color: rgba(62,207,74,0.4);
+    background: #162a18;
+  }
+  .probe-type-btn .btn-icon {
+    width: 44px; height: 44px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .probe-type-btn .btn-label { font-size: 14px; font-weight: 500; color: #d4eed4; }
+  .probe-type-btn .btn-sub { font-size: 12px; color: #6b9e6e; }
+
+  .grass-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-bottom: 24px;
+  }
+
+  .grass-btn {
+    padding: 14px 12px;
+    background: #142316;
+    border: 0.5px solid rgba(255,255,255,0.08);
+    border-radius: 12px; cursor: pointer;
+    text-align: left; transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .grass-btn:hover, .grass-btn.selected {
+    border-color: rgba(62,207,74,0.4);
+    background: #162a18;
+  }
+  .grass-name { font-size: 13px; font-weight: 500; color: #d4eed4; }
+  .grass-info { font-size: 11px; color: #6b9e6e; margin-top: 3px; }
+
+  .wifi-input {
+    width: 100%; padding: 14px;
+    background: #142316;
+    border: 0.5px solid rgba(255,255,255,0.12);
+    border-radius: 10px; color: #e8f5e8;
+    font-size: 14px; font-family: 'DM Sans', sans-serif;
+    margin-bottom: 10px; outline: none;
+    transition: border-color 0.15s;
+  }
+  .wifi-input:focus { border-color: rgba(62,207,74,0.4); }
+  .wifi-input::placeholder { color: #4a7a4e; }
+
+  .wifi-label { font-size: 12px; color: #6b9e6e; margin-bottom: 6px; }
+
+  .primary-btn {
+    width: 100%; padding: 15px;
+    background: #2d7a35; border: none; border-radius: 12px;
+    color: #a8e6a3; font-size: 14px; font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: background 0.15s;
+    margin-top: 8px;
+  }
+  .primary-btn:hover { background: #3a9645; }
+  .primary-btn:disabled { background: #1e3a20; color: #4a7a4e; cursor: not-allowed; }
+
+  .back-btn {
+    display: flex; align-items: center; gap: 6px;
+    color: #6b9e6e; font-size: 13px; cursor: pointer;
+    background: none; border: none;
+    font-family: 'DM Sans', sans-serif;
+    margin-bottom: 20px; padding: 0;
+  }
+
+  .progress-dots {
+    display: flex; gap: 6px; justify-content: center; margin-bottom: 28px;
+  }
+  .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(255,255,255,0.1); transition: all 0.2s;
+  }
+  .dot.active { background: #3ecf4a; width: 18px; border-radius: 3px; }
+  .dot.done { background: #2d7a35; }
+
+  .connecting-anim {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 40px 20px;
+  }
+  .spinner {
+    width: 56px; height: 56px; border-radius: 50%;
+    border: 3px solid rgba(62,207,74,0.15);
+    border-top-color: #3ecf4a;
+    animation: spin 1s linear infinite; margin-bottom: 20px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 430px; max-width: 100%;
+    background: rgba(13,31,14,0.95);
+    backdrop-filter: blur(12px);
+    border-top: 0.5px solid rgba(255,255,255,0.08);
+    display: flex;
+    padding: 8px 0;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  }
+
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; gap: 3px;
+    cursor: pointer; padding: 6px 0;
+    color: #4a7a4e; font-size: 11px; transition: color 0.15s;
+  }
+  .nav-item.active { color: #3ecf4a; }
+  .nav-item i { font-size: 20px; }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🌿</div>
+      <div>
+        <div class="logo-text">Garden Tech</div>
+        <div class="logo-sub">SOIL MONITOR</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="icon-btn" onclick="refreshData()" title="Refresh"><i class="ti ti-refresh" aria-hidden="true"></i></div>
+      <div class="icon-btn" onclick="switchTab('settings')" title="Settings"><i class="ti ti-settings" aria-hidden="true"></i></div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-dot"></div>
+    <span id="statusText">Live · Last updated just now · WiFi: VR1600-3F67</span>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('dashboard')" id="tab-dashboard">Dashboard</div>
+    <div class="tab" onclick="switchTab('history')" id="tab-history">History</div>
+    <div class="tab" onclick="switchTab('pair')" id="tab-pair">+ Pair</div>
+    <div class="tab" onclick="switchTab('settings')" id="tab-settings">Settings</div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="screen active" id="screen-dashboard">
+      <div class="section-label">Your Probes</div>
+
+      <div class="probe-card selected" id="probe1" onclick="selectProbe(1)">
+        <div class="probe-header">
+          <div>
+            <div class="probe-name">Front Lawn</div>
+            <div class="probe-type">Buffalo grass · Probe 1</div>
+          </div>
+          <div class="probe-badge badge-good" id="badge1">Ideal</div>
+        </div>
+        <div class="moisture-pct"><span id="pct1">52</span><span>%</span></div>
+        <div class="moisture-scale">
+          <div class="scale-track"><div class="scale-ideal"></div></div>
+          <div class="scale-needle" id="needle1" style="left:52%"></div>
+        </div>
+        <div class="scale-labels"><span>Dry</span><span>Ideal zone</span><span>Wet</span></div>
+        <div class="probe-meta">
+          <div class="meta-item"><strong id="trend1" style="color:#3ecf4a">→ Stable</strong>Trend</div>
+          <div class="meta-item"><strong>2 min ago</strong>Last reading</div>
+          <div class="meta-item"><strong>Every 15 min</strong>Frequency</div>
+        </div>
+      </div>
+
+      <div class="probe-card" id="probe2" onclick="selectProbe(2)">
+        <div class="probe-header">
+          <div>
+            <div class="probe-name">Back Garden</div>
+            <div class="probe-type">Couch grass · Probe 2</div>
+          </div>
+          <div class="probe-badge badge-dry" id="badge2">Dry</div>
+        </div>
+        <div class="moisture-pct"><span id="pct2">24</span><span>%</span></div>
+        <div class="moisture-scale">
+          <div class="scale-track"><div class="scale-ideal"></div></div>
+          <div class="scale-needle" id="needle2" style="left:24%"></div>
+        </div>
+        <div class="scale-labels"><span>Dry</span><span>Ideal zone</span><span>Wet</span></div>
+        <div class="probe-meta">
+          <div class="meta-item"><strong id="trend2" style="color:#ef8f27">↓ Drying</strong>Trend</div>
+          <div class="meta-item"><strong>5 min ago</strong>Last reading</div>
+          <div class="meta-item"><strong>Every 15 min</strong>Frequency</div>
+        </div>
+      </div>
+
+      <button class="add-probe-btn" onclick="switchTab('pair')">
+        <i class="ti ti-plus" aria-hidden="true"></i> Pair new probe
+      </button>
+
+      <div class="section-label">Recent Activity</div>
+      <div style="background:#142316;border:0.5px solid rgba(255,255,255,0.08);border-radius:14px;padding:4px 14px;">
+        <div class="activity-item">
+          <div class="activity-dot" style="background:#ef8f27"></div>
+          <div class="activity-text">Back Garden dropped below 30% — watering recommended</div>
+          <div class="activity-time">08:45</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot" style="background:#389add"></div>
+          <div class="activity-text">Front Lawn — sprinkler detected, dry alert suppressed 4 hrs</div>
+          <div class="activity-time">07:12</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot" style="background:#3ecf4a"></div>
+          <div class="activity-text">Front Lawn moisture returned to ideal range</div>
+          <div class="activity-time">07:50</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot" style="background:#4a7a4e"></div>
+          <div class="activity-text">Both probes online · WiFi connected</div>
+          <div class="activity-time">06:00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="screen" id="screen-history">
+      <div class="section-label">24-Hour History</div>
+      <div class="detail-panel">
+        <h3>Front Lawn — Buffalo grass</h3>
+        <div class="chart-container">
+          <canvas id="historyChart1" role="img" aria-label="24 hour moisture history front lawn">Moisture over 24 hours.</canvas>
+        </div>
+      </div>
+      <div class="detail-panel">
+        <h3>Back Garden — Couch grass</h3>
+        <div class="chart-container">
+          <canvas id="historyChart2" role="img" aria-label="24 hour moisture history back garden">Moisture over 24 hours.</canvas>
+        </div>
+      </div>
+      <div class="section-label">Watering Events</div>
+      <div style="background:#142316;border:0.5px solid rgba(255,255,255,0.08);border-radius:14px;padding:4px 14px;">
+        <div class="activity-item">
+          <div class="activity-dot" style="background:#389add"></div>
+          <div class="activity-text">Front Lawn · Sprinkler detected · +28% rise in 6 min</div>
+          <div class="activity-time">Today 07:12</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot" style="background:#389add"></div>
+          <div class="activity-text">Back Garden · Manual watering · +19% rise</div>
+          <div class="activity-time">Yesterday 18:30</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAIR NEW PROBE -->
+    <div class="screen" id="screen-pair">
+      <div class="pair-screen" style="padding:16px 0 100px;">
+
+        <div class="progress-dots" id="progressDots">
+          <div class="dot active" id="dot0"></div>
+          <div class="dot" id="dot1"></div>
+          <div class="dot" id="dot2"></div>
+          <div class="dot" id="dot3"></div>
+          <div class="dot" id="dot4"></div>
+        </div>
+
+        <!-- Step 1: Power on -->
+        <div class="pair-step active" id="step0">
+          <div class="pair-illustration">🔌</div>
+          <div class="pair-title">Power on your probe</div>
+          <div class="pair-sub">Plug your Garden Tech probe into a powerbank or USB power source. Hold the small button for 3 seconds until the LED flashes green.</div>
+          <button class="primary-btn" onclick="goStep(1)">LED is flashing green →</button>
+        </div>
+
+        <!-- Step 2: What are you monitoring -->
+        <div class="pair-step" id="step1">
+          <button class="back-btn" onclick="goStep(0)"><i class="ti ti-arrow-left" style="font-size:15px"></i> Back</button>
+          <div class="pair-title">What are you monitoring?</div>
+          <div class="pair-sub">This helps us set the right moisture thresholds.</div>
+
+          <div class="probe-type-btn" id="typeLawn" onclick="selectType('lawn')">
+            <div class="btn-icon" style="background:rgba(45,122,53,0.2);">🌿</div>
+            <div>
+              <div class="btn-label">Lawn</div>
+              <div class="btn-sub">Front yard, back yard, grass areas</div>
+            </div>
+          </div>
+          <div class="probe-type-btn" id="typePlant" onclick="selectType('plant')">
+            <div class="btn-icon" style="background:rgba(56,138,221,0.15);">🪴</div>
+            <div>
+              <div class="btn-label">Plant or garden bed</div>
+              <div class="btn-sub">Pot plants, veggie patch, garden beds</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Grass type -->
+        <div class="pair-step" id="step2">
+          <button class="back-btn" onclick="goStep(1)"><i class="ti ti-arrow-left" style="font-size:15px"></i> Back</button>
+          <div class="pair-title" id="step2Title">Select your grass type</div>
+          <div class="pair-sub" id="step2Sub">Choose the variety growing in your lawn for accurate thresholds.</div>
+          <div class="grass-grid" id="grassGrid">
+            <div class="grass-btn" onclick="selectGrass('Buffalo')">
+              <div class="grass-name">Buffalo</div>
+              <div class="grass-info">Ideal 40–65%</div>
+            </div>
+            <div class="grass-btn" onclick="selectGrass('Couch')">
+              <div class="grass-name">Couch</div>
+              <div class="grass-info">Ideal 35–60%</div>
+            </div>
+            <div class="grass-btn" onclick="selectGrass('Kikuyu')">
+              <div class="grass-name">Kikuyu</div>
+              <div class="grass-info">Ideal 30–55%</div>
+            </div>
+            <div class="grass-btn" onclick="selectGrass('Zoysia')">
+              <div class="grass-name">Zoysia</div>
+              <div class="grass-info">Ideal 40–65%</div>
+            </div>
+            <div class="grass-btn" onclick="selectGrass('Fescue')">
+              <div class="grass-name">Fescue</div>
+              <div class="grass-info">Ideal 45–70%</div>
+            </div>
+            <div class="grass-btn" onclick="selectGrass('Not sure')">
+              <div class="grass-name">Not sure</div>
+              <div class="grass-info">Use default range</div>
+            </div>
+          </div>
+          <button class="primary-btn" id="grassNext" disabled onclick="goStep(3)">Next →</button>
+        </div>
+
+        <!-- Step 4: WiFi credentials -->
+        <div class="pair-step" id="step3">
+          <button class="back-btn" onclick="goStep(2)"><i class="ti ti-arrow-left" style="font-size:15px"></i> Back</button>
+          <div class="pair-illustration">📶</div>
+          <div class="pair-title">Connect to WiFi</div>
+          <div class="pair-sub">Your probe will connect to your home WiFi to send readings. Enter your network details below.</div>
+
+          <div class="wifi-label">WiFi network name</div>
+          <input type="text" class="wifi-input" id="wifiSSID" placeholder="e.g. VR1600-3F67" value="VR1600-3F67">
+
+          <div class="wifi-label">WiFi password</div>
+          <input type="password" class="wifi-input" id="wifiPass" placeholder="Your WiFi password">
+
+          <div style="font-size:11px;color:#4a7a4e;margin-top:4px;margin-bottom:16px;">
+            🔒 Your password is sent directly to the probe over Bluetooth and never stored on our servers.
+          </div>
+
+          <button class="primary-btn" onclick="startConnecting()">Send to probe →</button>
+        </div>
+
+        <!-- Step 5: Connecting -->
+        <div class="pair-step" id="step4">
+          <div class="connecting-anim">
+            <div class="spinner"></div>
+            <div class="pair-title" id="connectTitle" style="text-align:center">Sending WiFi credentials…</div>
+            <div class="pair-sub" id="connectSub" style="text-align:center">Connecting probe to your network</div>
+          </div>
+        </div>
+
+        <!-- Step 6: Success -->
+        <div class="pair-step" id="step5">
+          <div class="pair-illustration" style="background:rgba(62,207,74,0.1);border-color:rgba(62,207,74,0.3);">✅</div>
+          <div class="pair-title" style="text-align:center">Probe paired!</div>
+          <div class="pair-sub" style="text-align:center" id="successMsg">Your probe is online and sending readings to your dashboard.</div>
+          <button class="primary-btn" onclick="switchTab('dashboard')">Go to dashboard →</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="screen" id="screen-settings">
+      <div class="section-label">Notifications</div>
+      <div class="notif-item">
+        <div class="notif-icon" style="background:rgba(239,143,39,0.12);">🌵</div>
+        <div class="notif-content">
+          <div class="notif-title">Dry alerts</div>
+          <div class="notif-desc">Notify when moisture drops below ideal</div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon" style="background:rgba(56,138,221,0.12);">🚿</div>
+        <div class="notif-content">
+          <div class="notif-title">Sprinkler detected</div>
+          <div class="notif-desc">Confirm when automatic watering runs</div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon" style="background:rgba(62,207,74,0.10);">✅</div>
+        <div class="notif-content">
+          <div class="notif-title">Back in range</div>
+          <div class="notif-desc">Notify when moisture returns to ideal</div>
+        </div>
+        <div class="toggle" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+      </div>
+
+      <div class="section-label">Probes</div>
+      <div class="notif-item">
+        <div class="notif-icon" style="background:rgba(45,122,53,0.15);">🌿</div>
+        <div class="notif-content">
+          <div class="notif-title">Front Lawn</div>
+          <div class="notif-desc">Buffalo · Probe 1 · Online</div>
+        </div>
+        <i class="ti ti-chevron-right" style="color:#4a7a4e;font-size:18px;" aria-hidden="true"></i>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon" style="background:rgba(45,122,53,0.15);">🌿</div>
+        <div class="notif-content">
+          <div class="notif-title">Back Garden</div>
+          <div class="notif-desc">Couch · Probe 2 · Online</div>
+        </div>
+        <i class="ti ti-chevron-right" style="color:#4a7a4e;font-size:18px;" aria-hidden="true"></i>
+      </div>
+
+      <div class="section-label">Calibration</div>
+      <div style="background:#142316;border:0.5px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px;margin-bottom:8px;">
+        <div style="font-size:13px;color:#a8c9a8;margin-bottom:6px;font-weight:500;">Probe 1 · Front Lawn</div>
+        <div style="display:flex;gap:16px;font-size:12px;color:#6b9e6e;margin-bottom:10px;">
+          <span>Dry raw: <strong style="color:#ef8f27">2800</strong></span>
+          <span>Wet raw: <strong style="color:#389add">1200</strong></span>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;text-align:center;padding-bottom:20px;">
+        <div style="font-size:11px;color:#2a4a2e;margin-bottom:4px;">Garden Tech v1.0 · Sydney, AU</div>
+        <div style="font-size:11px;color:#2a4a2e;">Sydney Water compliant · No hub required</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item active" id="nav-dashboard" onclick="switchTab('dashboard')">
+      <i class="ti ti-layout-dashboard" aria-hidden="true"></i>Dashboard
+    </div>
+    <div class="nav-item" id="nav-history" onclick="switchTab('history')">
+      <i class="ti ti-chart-line" aria-hidden="true"></i>History
+    </div>
+    <div class="nav-item" id="nav-pair" onclick="switchTab('pair')">
+      <i class="ti ti-plus" aria-hidden="true"></i>Pair
+    </div>
+    <div class="nav-item" id="nav-settings" onclick="switchTab('settings')">
+      <i class="ti ti-settings" aria-hidden="true"></i>Settings
+    </div>
+  </div>
+</div>
+
+<script>
+// Tab switching
+function switchTab(tab) {
+  ['dashboard','history','pair','settings'].forEach(t => {
+    document.getElementById('screen-'+t).classList.toggle('active', t===tab);
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('nav-'+t).classList.toggle('active', t===tab);
+  });
+  if (tab==='history') initCharts();
+  if (tab==='pair') goStep(0);
+}
+
+// Probe selection
+function selectProbe(id) {
+  document.getElementById('probe1').classList.toggle('selected', id===1);
+  document.getElementById('probe2').classList.toggle('selected', id===2);
+}
+
+// Live simulation
+const probeData = {
+  1: { pct: 52, dir: 0.1 },
+  2: { pct: 24, dir: -0.2 }
+};
+
+function updateProbe(id) {
+  const p = probeData[id];
+  p.pct = Math.max(5, Math.min(95, p.pct + (Math.random()-0.5)*1.2 + p.dir));
+  const pct = Math.round(p.pct);
+  document.getElementById('pct'+id).textContent = pct;
+  document.getElementById('needle'+id).style.left = pct+'%';
+  const badge = document.getElementById('badge'+id);
+  if (pct < 35) { badge.textContent='Dry'; badge.className='probe-badge badge-dry'; }
+  else if (pct > 72) { badge.textContent='Wet'; badge.className='probe-badge badge-wet'; }
+  else { badge.textContent='Ideal'; badge.className='probe-badge badge-good'; }
+}
+
+setInterval(() => { updateProbe(1); updateProbe(2); }, 15000);
+
+function refreshData() {
+  updateProbe(1); updateProbe(2);
+  const s = document.getElementById('statusText');
+  s.textContent = 'Live · Just refreshed · WiFi: VR1600-3F67';
+  setTimeout(() => s.textContent='Live · Last updated just now · WiFi: VR1600-3F67', 2000);
+}
+
+// History charts
+let chartsInited = false;
+function initCharts() {
+  if (chartsInited) return;
+  chartsInited = true;
+  const hours = [];
+  for (let i=23;i>=0;i--) hours.push(i===0?'Now':i+'h');
+  const d1 = [40,38,36,34,32,35,38,42,55,68,72,67,62,58,56,54,53,52,51,52,53,51,52,52];
+  const d2 = [52,48,44,40,37,34,31,34,42,50,48,44,40,37,34,30,28,26,25,24,24,24,24,24];
+
+  const cfg = (data,color) => ({
+    type:'line',
+    data:{ labels:hours, datasets:[{data,borderColor:color,borderWidth:2,pointRadius:0,fill:true,backgroundColor:color+'18',tension:0.4}]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#4a7a4e',font:{size:10},maxTicksLimit:6},grid:{color:'rgba(255,255,255,0.04)'},border:{color:'rgba(255,255,255,0.06)'}},
+        y:{min:0,max:100,ticks:{color:'#4a7a4e',font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.04)'},border:{color:'rgba(255,255,255,0.06)'}}
+      }
+    }
+  });
+  new Chart(document.getElementById('historyChart1'), cfg(d1,'#3ecf4a'));
+  new Chart(document.getElementById('historyChart2'), cfg(d2,'#ef8f27'));
+}
+
+// Pairing flow
+let pairStep = 0;
+let selectedType = null;
+let selectedGrass = null;
+
+function goStep(n) {
+  document.querySelector('#step'+pairStep).classList.remove('active');
+  pairStep = n;
+  document.querySelector('#step'+pairStep).classList.add('active');
+  for (let i=0;i<5;i++) {
+    const d = document.getElementById('dot'+i);
+    d.classList.toggle('active', i===n);
+    d.classList.toggle('done', i<n);
+  }
+}
+
+function selectType(type) {
+  selectedType = type;
+  document.getElementById('typeLawn').classList.toggle('selected', type==='lawn');
+  document.getElementById('typePlant').classList.toggle('selected', type==='plant');
+  const isPlant = type==='plant';
+  document.getElementById('step2Title').textContent = isPlant ? 'What kind of plant?' : 'Select your grass type';
+  document.getElementById('step2Sub').textContent = isPlant
+    ? 'This sets the right moisture range for your plant type.'
+    : 'Choose the variety growing in your lawn for accurate thresholds.';
+
+  if (isPlant) {
+    document.getElementById('grassGrid').innerHTML = `
+      <div class="grass-btn" onclick="selectGrass('Tropical')"><div class="grass-name">Tropical</div><div class="grass-info">Ideal 55–75%</div></div>
+      <div class="grass-btn" onclick="selectGrass('Succulent')"><div class="grass-name">Succulent</div><div class="grass-info">Ideal 20–40%</div></div>
+      <div class="grass-btn" onclick="selectGrass('Veggie patch')"><div class="grass-name">Veggie patch</div><div class="grass-info">Ideal 55–70%</div></div>
+      <div class="grass-btn" onclick="selectGrass('Native')"><div class="grass-name">Native</div><div class="grass-info">Ideal 30–50%</div></div>
+      <div class="grass-btn" onclick="selectGrass('Herbs')"><div class="grass-name">Herbs</div><div class="grass-info">Ideal 45–65%</div></div>
+      <div class="grass-btn" onclick="selectGrass('General')"><div class="grass-name">General</div><div class="grass-info">Ideal 40–60%</div></div>
+    `;
+  } else {
+    document.getElementById('grassGrid').innerHTML = `
+      <div class="grass-btn" onclick="selectGrass('Buffalo')"><div class="grass-name">Buffalo</div><div class="grass-info">Ideal 40–65%</div></div>
+      <div class="grass-btn" onclick="selectGrass('Couch')"><div class="grass-name">Couch</div><div class="grass-info">Ideal 35–60%</div></div>
+      <div class="grass-btn" onclick="selectGrass('Kikuyu')"><div class="grass-name">Kikuyu</div><div class="grass-info">Ideal 30–55%</div></div>
+      <div class="grass-btn" onclick="selectGrass('Zoysia')"><div class="grass-name">Zoysia</div><div class="grass-info">Ideal 40–65%</div></div>
+      <div class="grass-btn" onclick="selectGrass('Fescue')"><div class="grass-name">Fescue</div><div class="grass-info">Ideal 45–70%</div></div>
+      <div class="grass-btn" onclick="selectGrass('Not sure')"><div class="grass-name">Not sure</div><div class="grass-info">Use default range</div></div>
+    `;
+  }
+  setTimeout(() => goStep(2), 200);
+}
+
+function selectGrass(grass) {
+  selectedGrass = grass;
+  document.querySelectorAll('.grass-btn').forEach(b => {
+    b.classList.toggle('selected', b.querySelector('.grass-name').textContent === grass);
+  });
+  document.getElementById('grassNext').disabled = false;
+}
+
+function startConnecting() {
+  const ssid = document.getElementById('wifiSSID').value;
+  const pass = document.getElementById('wifiPass').value;
+  if (!pass) { alert('Please enter your WiFi password'); return; }
+  goStep(4);
+  const msgs = [
+    ['Sending WiFi credentials…', 'Connecting probe to your network'],
+    ['Probe received credentials…', 'Attempting to join '+ssid],
+    ['Connected to '+ssid+'!', 'Getting first moisture reading…'],
+  ];
+  let i=0;
+  const interval = setInterval(() => {
+    i++;
+    if (i < msgs.length) {
+      document.getElementById('connectTitle').textContent = msgs[i][0];
+      document.getElementById('connectSub').textContent = msgs[i][1];
+    } else {
+      clearInterval(interval);
+      document.getElementById('successMsg').textContent =
+        'Your '+(selectedGrass||'')+(selectedType==='lawn'?' lawn ':' ')+'probe is online and sending readings to your dashboard.';
+      goStep(5);
+    }
+  }, 1800);
+}
+
+// Register service worker for PWA
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
