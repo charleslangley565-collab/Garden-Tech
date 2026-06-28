@@ -198,6 +198,7 @@ body {
   cursor: pointer; transition: background 0.15s; margin-top: 8px;
 }
 .primary-btn:hover { background: #3a9645; }
+.primary-btn:disabled { background: #1e3a20; color: #4a7a4e; cursor: not-allowed; }
 
 .secondary-btn {
   width: 100%; padding: 14px;
@@ -304,13 +305,101 @@ body {
 .field-input:focus { border-color: rgba(62,207,74,0.4); }
 .field-input::placeholder { color: #4a7a4e; }
 
+/* INSTRUCTION BOX */
+.instruction-box {
+  background: #0f1e10;
+  border: 0.5px solid rgba(62,207,74,0.15);
+  border-radius: 12px; padding: 16px; margin-bottom: 20px;
+}
+.instruction-step {
+  display: flex; gap: 12px; padding: 8px 0;
+  border-bottom: 0.5px solid rgba(255,255,255,0.05);
+  align-items: flex-start;
+}
+.instruction-step:last-child { border-bottom: none; }
+.instruction-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(62,207,74,0.15); color: #3ecf4a;
+  font-size: 11px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.instruction-text { font-size: 13px; color: #a8c9a8; line-height: 1.5; }
+.instruction-text code {
+  font-family: 'DM Mono', monospace; font-size: 12px;
+  background: rgba(62,207,74,0.1); color: #3ecf4a;
+  padding: 1px 6px; border-radius: 4px;
+}
+
+/* CONNECTION TEST */
+.conn-status {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-radius: 10px;
+  margin-top: 12px; font-size: 13px; font-weight: 500;
+  transition: all 0.2s;
+}
+.conn-status.idle { display: none; }
+.conn-status.testing { background: rgba(255,255,255,0.05); color: #6b9e6e; }
+.conn-status.success { background: rgba(62,207,74,0.1); color: #3ecf4a; border: 0.5px solid rgba(62,207,74,0.25); }
+.conn-status.error { background: rgba(162,45,45,0.1); color: #e06060; border: 0.5px solid rgba(162,45,45,0.2); }
+
+.spinner-sm {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid rgba(62,207,74,0.2);
+  border-top-color: #3ecf4a;
+  animation: spin 0.8s linear infinite; flex-shrink: 0;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+
 .spinner {
   width: 56px; height: 56px; border-radius: 50%;
   border: 3px solid rgba(62,207,74,0.15);
   border-top-color: #3ecf4a;
   animation: spin 1s linear infinite; margin: 0 auto 20px;
 }
-@keyframes spin { to{transform:rotate(360deg)} }
+
+/* INTERVAL PICKER */
+.interval-picker-wrap {
+  position: relative; margin: 8px 0 4px;
+  background: #0f1e10;
+  border: 0.5px solid rgba(255,255,255,0.12);
+  border-radius: 12px; overflow: hidden; height: 176px;
+}
+.interval-picker-wrap::before,
+.interval-picker-wrap::after {
+  content: ''; position: absolute; left: 0; right: 0; height: 60px; z-index: 2; pointer-events: none;
+}
+.interval-picker-wrap::before {
+  top: 0;
+  background: linear-gradient(to bottom, #0f1e10, transparent);
+}
+.interval-picker-wrap::after {
+  bottom: 0;
+  background: linear-gradient(to top, #0f1e10, transparent);
+}
+.interval-selector-line {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  left: 0; right: 0; height: 44px;
+  background: rgba(62,207,74,0.08);
+  border-top: 0.5px solid rgba(62,207,74,0.25);
+  border-bottom: 0.5px solid rgba(62,207,74,0.25);
+  pointer-events: none; z-index: 1;
+}
+.interval-picker {
+  height: 176px; overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.interval-picker::-webkit-scrollbar { display: none; }
+.interval-spacer { height: 66px; }
+.interval-item {
+  height: 44px; scroll-snap-align: center;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 500; color: #4a7a4e;
+  cursor: pointer; transition: color 0.15s; user-select: none;
+}
+.interval-item.selected { color: #a8e6a3; }
 
 /* EDIT MODAL */
 .modal-overlay {
@@ -325,6 +414,7 @@ body {
   background: #142316; border-radius: 20px 20px 0 0;
   padding: 24px 20px 40px; width: 100%; max-width: 430px;
   transform: translateY(20px); transition: transform 0.2s;
+  max-height: 90vh; overflow-y: auto;
 }
 .modal-overlay.active .modal { transform: translateY(0); }
 .modal-title { font-size: 16px; font-weight: 600; color: #d4eed4; margin-bottom: 20px; }
@@ -463,19 +553,81 @@ body {
           <div class="dot" id="dot2"></div>
           <div class="dot" id="dot3"></div>
           <div class="dot" id="dot4"></div>
+          <div class="dot" id="dot5"></div>
         </div>
 
-        <!-- Step 0: Power on -->
+        <!-- Step 0: Power on + fork -->
         <div class="pair-step active" id="step0">
           <div class="pair-illustration">🔌</div>
           <div class="pair-title">Power on your probe</div>
-          <div class="pair-sub">Plug your Garden Tech probe into a powerbank or USB power. Hold the button for 3 seconds until the LED flashes green.</div>
-          <button class="primary-btn" onclick="goStep(1)">LED is flashing green →</button>
+          <div class="pair-sub">Plug your Garden Tech probe into a power bank or USB power source and wait a few seconds for it to start up.</div>
+          <div class="type-btn" onclick="goStep('0a')" style="margin-bottom:10px;">
+            <div class="btn-icon" style="background:rgba(62,207,74,0.12);">🆕</div>
+            <div>
+              <div class="btn-label">New probe — first time setup</div>
+              <div class="btn-sub">Connect the probe to your home WiFi</div>
+            </div>
+            <i class="ti ti-chevron-right" style="color:#4a7a4e;margin-left:auto;font-size:16px;"></i>
+          </div>
+          <div class="type-btn" onclick="goStep('0b')">
+            <div class="btn-icon" style="background:rgba(56,138,221,0.12);">📶</div>
+            <div>
+              <div class="btn-label">Already on my WiFi</div>
+              <div class="btn-sub">Probe is connected, I just need the IP</div>
+            </div>
+            <i class="ti ti-chevron-right" style="color:#4a7a4e;margin-left:auto;font-size:16px;"></i>
+          </div>
+        </div>
+
+        <!-- Step 0a: WiFi setup instructions -->
+        <div class="pair-step" id="step0a">
+          <button class="back-btn" onclick="goStep('0')"><i class="ti ti-arrow-left" style="font-size:15px"></i> Back</button>
+          <div class="pair-illustration">📡</div>
+          <div class="pair-title">Connect probe to WiFi</div>
+          <div class="pair-sub">Your probe creates a temporary WiFi network. Follow these steps on your phone.</div>
+          <div class="instruction-box">
+            <div class="instruction-step">
+              <div class="instruction-num">1</div>
+              <div class="instruction-text">Go to your phone's <strong>WiFi settings</strong> and connect to the network called <code>GardenTech-Setup</code> (password: <code>gardentech</code>)</div>
+            </div>
+            <div class="instruction-step">
+              <div class="instruction-num">2</div>
+              <div class="instruction-text">Open a browser and go to <code>192.168.4.1</code></div>
+            </div>
+            <div class="instruction-step">
+              <div class="instruction-num">3</div>
+              <div class="instruction-text">Enter your <strong>home WiFi name and password</strong>, then tap Save</div>
+            </div>
+            <div class="instruction-step">
+              <div class="instruction-num">4</div>
+              <div class="instruction-text">The probe will restart and connect to your home WiFi. <strong>Reconnect your phone</strong> to your home WiFi network</div>
+            </div>
+          </div>
+          <button class="primary-btn" onclick="goStep('0b')">Done — find my probe's IP →</button>
+        </div>
+
+        <!-- Step 0b: Find IP instructions -->
+        <div class="pair-step" id="step0b">
+          <button class="back-btn" onclick="goStep('0')"><i class="ti ti-arrow-left" style="font-size:15px"></i> Back</button>
+          <div class="pair-illustration">🔍</div>
+          <div class="pair-title">Find your probe's IP address</div>
+          <div class="pair-sub">You'll need the IP address to connect this app to your probe. There are two easy ways to find it.</div>
+          <div class="instruction-box">
+            <div class="instruction-step">
+              <div class="instruction-num" style="background:rgba(56,138,221,0.15);color:#389add;">A</div>
+              <div class="instruction-text"><strong>Via Arduino IDE:</strong> Open the Serial Monitor (115200 baud) after the probe boots. Look for the line: <code>Connected! IP: 192.168.x.x</code></div>
+            </div>
+            <div class="instruction-step">
+              <div class="instruction-num" style="background:rgba(56,138,221,0.15);color:#389add;">B</div>
+              <div class="instruction-text"><strong>Via your router:</strong> Log into your router's admin page and look for a device named <code>GardenTech</code> in the connected devices list</div>
+            </div>
+          </div>
+          <button class="primary-btn" onclick="goStep(1)">I have the IP →</button>
         </div>
 
         <!-- Step 1: Name your probe -->
         <div class="pair-step" id="step1">
-          <button class="back-btn" onclick="goStep(0)"><i class="ti ti-arrow-left" style="font-size:15px"></i> Back</button>
+          <button class="back-btn" onclick="goStep('0b')"><i class="ti ti-arrow-left" style="font-size:15px"></i> Back</button>
           <div class="pair-title">Name your probe</div>
           <div class="pair-sub">Give it a name so you know which area it's monitoring.</div>
           <div class="field-label">Probe name</div>
@@ -507,9 +659,25 @@ body {
           <button class="primary-btn" id="typeNextBtn" disabled onclick="goStep(4)">Next →</button>
         </div>
 
-        <!-- Step 4: Confirm & add -->
+        <!-- Step 4: Enter IP + test connection -->
         <div class="pair-step" id="step4">
           <button class="back-btn" onclick="goStep(3)"><i class="ti ti-arrow-left" style="font-size:15px"></i> Back</button>
+          <div class="pair-title">Connect to your probe</div>
+          <div class="pair-sub">Enter the IP address you found earlier. The app will verify it can reach your probe.</div>
+          <div class="field-label">Probe IP address</div>
+          <input type="text" class="field-input" id="probeIP" placeholder="e.g. 192.168.1.107" inputmode="decimal">
+          <div class="conn-status idle" id="connStatus">
+            <div class="spinner-sm" id="connSpinner" style="display:none;"></div>
+            <i class="ti ti-circle-check" id="connIcon" style="font-size:18px;display:none;"></i>
+            <span id="connMsg"></span>
+          </div>
+          <button class="primary-btn" id="testConnBtn" onclick="testConnectionStep()">Test connection →</button>
+          <button class="primary-btn" id="skipConnBtn" onclick="goStep(5)" style="display:none;background:#1e3a20;color:#6b9e6e;margin-top:6px;">Continue →</button>
+        </div>
+
+        <!-- Step 5: Confirm & add -->
+        <div class="pair-step" id="step5">
+          <button class="back-btn" onclick="goStep(4)"><i class="ti ti-arrow-left" style="font-size:15px"></i> Back</button>
           <div class="pair-illustration">✅</div>
           <div class="pair-title" id="confirmTitle">Ready to add</div>
           <div class="pair-sub" id="confirmSub">Your probe is configured and ready.</div>
@@ -522,9 +690,13 @@ body {
               <span style="font-size:13px;color:#6b9e6e;">Type</span>
               <span style="font-size:13px;color:#d4eed4;font-weight:500;" id="confirmType"></span>
             </div>
-            <div style="display:flex;justify-content:space-between;padding:6px 0;">
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid rgba(255,255,255,0.06);">
               <span style="font-size:13px;color:#6b9e6e;">Ideal range</span>
               <span style="font-size:13px;color:#3ecf4a;font-weight:500;" id="confirmRange"></span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0;">
+              <span style="font-size:13px;color:#6b9e6e;">IP address</span>
+              <span style="font-size:13px;color:#d4eed4;font-weight:500;font-family:'DM Mono',monospace;" id="confirmIP"></span>
             </div>
           </div>
           <button class="primary-btn" onclick="addProbe()">Add to dashboard →</button>
@@ -594,8 +766,10 @@ body {
     <div class="modal-handle"></div>
     <div class="modal-title">Edit Probe</div>
     <input type="hidden" id="editProbeId">
+
     <div class="field-label">Probe name</div>
     <input type="text" class="field-input" id="editName" placeholder="Probe name">
+
     <div class="field-label" style="margin-top:14px;">Grass / plant type</div>
     <select class="field-input" id="editGrassType" style="appearance:none;">
       <option value="Buffalo">Buffalo (Ideal 40–65%)</option>
@@ -603,13 +777,39 @@ body {
       <option value="Kikuyu">Kikuyu (Ideal 30–55%)</option>
       <option value="Zoysia">Zoysia (Ideal 40–65%)</option>
       <option value="Fescue">Fescue (Ideal 45–70%)</option>
+      <option value="Not sure">Not sure (Ideal 35–65%)</option>
       <option value="Tropical">Tropical plant (Ideal 55–75%)</option>
       <option value="Succulent">Succulent (Ideal 20–40%)</option>
       <option value="Veggie patch">Veggie patch (Ideal 55–70%)</option>
       <option value="Native">Native plant (Ideal 30–50%)</option>
+      <option value="Herbs">Herbs (Ideal 45–65%)</option>
       <option value="General">General (Ideal 40–60%)</option>
     </select>
-    <button class="primary-btn" onclick="saveEdit()">Save changes</button>
+
+    <div class="field-label" style="margin-top:14px;">Probe IP address</div>
+    <input type="text" class="field-input" id="editIP" placeholder="e.g. 192.168.1.107" inputmode="decimal">
+    <div class="conn-status idle" id="editConnStatus">
+      <div class="spinner-sm" id="editConnSpinner" style="display:none;"></div>
+      <i class="ti ti-circle-check" id="editConnIcon" style="font-size:18px;display:none;"></i>
+      <span id="editConnMsg"></span>
+    </div>
+    <button class="primary-btn" onclick="testEditConnection()" style="margin-top:8px;background:#1e3a20;color:#6b9e6e;">
+      Test connection
+    </button>
+
+    <div class="field-label" style="margin-top:18px;">Update frequency</div>
+    <div style="font-size:12px;color:#4a7a4e;margin-bottom:8px;">How often the probe sends a reading to the app</div>
+    <div class="interval-picker-wrap">
+      <div class="interval-selector-line"></div>
+      <div class="interval-picker" id="editIntervalPicker">
+        <div class="interval-spacer"></div>
+        <!-- items injected by JS -->
+        <div class="interval-spacer"></div>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:12px;color:#4a7a4e;margin-top:6px;">Scroll to select — current: <span id="editIntervalLabel" style="color:#a8c9a8;">15 min</span></div>
+
+    <button class="primary-btn" onclick="saveEdit()" style="margin-top:16px;">Save changes</button>
     <button class="delete-btn" onclick="deleteProbe()">Remove probe</button>
   </div>
 </div>
@@ -620,10 +820,11 @@ body {
 // =============================================
 let probes = JSON.parse(localStorage.getItem('gt_probes') || '[]');
 let activity = JSON.parse(localStorage.getItem('gt_activity') || '[]');
-let pairStep = 0;
+let pairStep = '0';
 let selectedType = null;
 let selectedVariety = null;
 let editingProbeId = null;
+let connectionVerified = false;
 
 const GRASS_TYPES = {
   lawn: [
@@ -643,6 +844,28 @@ const GRASS_TYPES = {
     { name: 'General', range: '40–60%', low: 40, high: 60 },
   ]
 };
+
+const INTERVALS = [
+  { label: '10 sec',  value: 10 },
+  { label: '30 sec',  value: 30 },
+  { label: '1 min',   value: 60 },
+  { label: '2 min',   value: 120 },
+  { label: '5 min',   value: 300 },
+  { label: '10 min',  value: 600 },
+  { label: '15 min',  value: 900 },
+  { label: '20 min',  value: 1200 },
+  { label: '30 min',  value: 1800 },
+  { label: '45 min',  value: 2700 },
+  { label: '1 hour',  value: 3600 },
+];
+
+function formatInterval(seconds) {
+  const item = INTERVALS.find(i => i.value === seconds);
+  if (item) return item.label;
+  if (seconds < 60) return seconds + ' sec';
+  if (seconds < 3600) return Math.round(seconds/60) + ' min';
+  return Math.round(seconds/3600) + ' hour';
+}
 
 // =============================================
 // TABS
@@ -692,6 +915,7 @@ function renderDashboard() {
       else if (p.moisture > p.high) { badgeClass = 'badge-wet'; badgeText = 'Wet'; }
       else { badgeClass = 'badge-good'; badgeText = 'Ideal'; }
     }
+    const freqLabel = formatInterval(p.pollInterval || 900);
     return `
     <div class="probe-card ${i===0?'selected':''}" id="probeCard${p.id}">
       <div class="probe-header">
@@ -717,12 +941,11 @@ function renderDashboard() {
       <div class="probe-meta">
         <div class="meta-item"><strong id="trendDisplay${p.id}" style="color:#6b9e6e">— Waiting</strong>Trend</div>
         <div class="meta-item"><strong id="lastReadDisplay${p.id}">${p.lastRead || 'Never'}</strong>Last reading</div>
-        <div class="meta-item"><strong>Every 15 min</strong>Frequency</div>
+        <div class="meta-item"><strong>${freqLabel}</strong>Frequency</div>
       </div>
     </div>`;
   }).join('');
 
-  // Activity
   if (activity.length > 0) {
     activitySection.style.display = 'block';
     document.getElementById('activityList').innerHTML = activity.slice(0,5).map(a => `
@@ -737,30 +960,44 @@ function renderDashboard() {
 // =============================================
 // PAIRING FLOW
 // =============================================
+// dot index mapping: 0/0a/0b → dot0, 1 → dot1, 2 → dot2, 3 → dot3, 4 → dot4, 5 → dot5
+function stepToDot(s) {
+  const str = String(s);
+  if (str === '0' || str === '0a' || str === '0b') return 0;
+  return parseInt(str);
+}
+
 function resetPair() {
-  pairStep = 0;
+  pairStep = '0';
   selectedType = null;
   selectedVariety = null;
+  connectionVerified = false;
   document.querySelectorAll('.pair-step').forEach(s => s.classList.remove('active'));
   document.getElementById('step0').classList.add('active');
   updateDots(0);
-  document.getElementById('probeName').value = '';
-  document.getElementById('typeNextBtn').disabled = true;
+  if (document.getElementById('probeName')) document.getElementById('probeName').value = '';
+  if (document.getElementById('probeIP')) document.getElementById('probeIP').value = '';
+  if (document.getElementById('typeNextBtn')) document.getElementById('typeNextBtn').disabled = true;
   document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+  setConnStatus('idle', '', '');
+  const skipBtn = document.getElementById('skipConnBtn');
+  if (skipBtn) skipBtn.style.display = 'none';
 }
 
 function goStep(n) {
   document.getElementById('step'+pairStep).classList.remove('active');
-  pairStep = n;
+  pairStep = String(n);
   document.getElementById('step'+pairStep).classList.add('active');
-  updateDots(n);
+  updateDots(stepToDot(pairStep));
+  window.scrollTo(0,0);
 }
 
-function updateDots(n) {
-  for (let i=0;i<5;i++) {
+function updateDots(activeIdx) {
+  for (let i=0;i<6;i++) {
     const d = document.getElementById('dot'+i);
-    d.classList.toggle('active', i===n);
-    d.classList.toggle('done', i<n);
+    if (!d) continue;
+    d.classList.toggle('active', i===activeIdx);
+    d.classList.toggle('done', i<activeIdx);
   }
 }
 
@@ -795,15 +1032,72 @@ function selectVariety(name, range, low, high) {
     b.classList.toggle('selected', b.querySelector('.grass-name').textContent === name);
   });
   document.getElementById('typeNextBtn').disabled = false;
-  // Update confirm screen
-  const probeName = document.getElementById('probeName').value.trim();
-  document.getElementById('confirmName').textContent = probeName;
-  document.getElementById('confirmType').textContent = name;
-  document.getElementById('confirmRange').textContent = range;
+}
+
+// =============================================
+// CONNECTION TEST (PAIR FLOW)
+// =============================================
+function setConnStatus(state, msg, iconClass) {
+  const el = document.getElementById('connStatus');
+  const spinner = document.getElementById('connSpinner');
+  const icon = document.getElementById('connIcon');
+  const msgEl = document.getElementById('connMsg');
+  el.className = 'conn-status ' + state;
+  spinner.style.display = state === 'testing' ? 'block' : 'none';
+  icon.className = 'ti ' + iconClass;
+  icon.style.display = (state === 'success' || state === 'error') ? 'block' : 'none';
+  msgEl.textContent = msg;
+}
+
+async function testConnectionStep() {
+  const ip = document.getElementById('probeIP').value.trim();
+  if (!ip) { document.getElementById('probeIP').focus(); return; }
+
+  const btn = document.getElementById('testConnBtn');
+  const skipBtn = document.getElementById('skipConnBtn');
+  btn.disabled = true;
+  btn.textContent = 'Testing…';
+  setConnStatus('testing', 'Connecting to probe…', '');
+
+  try {
+    const data = await fetchFromProbe(ip);
+    setConnStatus('success', `Connected — moisture ${data.moisture}%`, 'ti-circle-check');
+    connectionVerified = true;
+    btn.textContent = 'Connected ✓';
+    // populate confirm screen
+    const name = document.getElementById('probeName').value.trim();
+    document.getElementById('confirmName').textContent = name;
+    document.getElementById('confirmType').textContent = selectedVariety ? selectedVariety.name : '—';
+    document.getElementById('confirmRange').textContent = selectedVariety ? selectedVariety.range : '—';
+    document.getElementById('confirmIP').textContent = ip;
+    skipBtn.style.display = 'block';
+    skipBtn.textContent = 'Continue →';
+    skipBtn.style.background = '#2d7a35';
+    skipBtn.style.color = '#a8e6a3';
+  } catch(e) {
+    setConnStatus('error', 'Could not reach probe. Check the IP and that your phone is on the same WiFi.', 'ti-circle-x');
+    btn.disabled = false;
+    btn.textContent = 'Retry →';
+  }
+}
+
+async function fetchFromProbe(ip) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6000);
+  try {
+    const res = await fetch(`http://${ip}/data`, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error('bad status');
+    return await res.json();
+  } catch(e) {
+    clearTimeout(timeout);
+    throw e;
+  }
 }
 
 function addProbe() {
   const name = document.getElementById('probeName').value.trim();
+  const ip = document.getElementById('probeIP').value.trim();
   const probe = {
     id: Date.now().toString(),
     name,
@@ -812,6 +1106,8 @@ function addProbe() {
     low: selectedVariety.low,
     high: selectedVariety.high,
     range: selectedVariety.range,
+    ip,
+    pollInterval: 900,
     moisture: undefined,
     lastRead: null,
     addedAt: new Date().toLocaleTimeString('en-AU', {hour:'2-digit',minute:'2-digit'})
@@ -826,6 +1122,8 @@ function addProbe() {
 // =============================================
 // EDIT / DELETE
 // =============================================
+let editIntervalValue = 900;
+
 function openEditModal(id) {
   const probe = probes.find(p => p.id === id);
   if (!probe) return;
@@ -833,6 +1131,10 @@ function openEditModal(id) {
   document.getElementById('editProbeId').value = id;
   document.getElementById('editName').value = probe.name;
   document.getElementById('editGrassType').value = probe.variety;
+  document.getElementById('editIP').value = probe.ip || '';
+  editIntervalValue = probe.pollInterval || 900;
+  setEditConnStatus('idle', '', '');
+  buildIntervalPicker('editIntervalPicker', 'editIntervalLabel', editIntervalValue);
   document.getElementById('editModal').classList.add('active');
 }
 
@@ -842,13 +1144,38 @@ function closeEditModal(e) {
   }
 }
 
+function setEditConnStatus(state, msg, iconClass) {
+  const el = document.getElementById('editConnStatus');
+  const spinner = document.getElementById('editConnSpinner');
+  const icon = document.getElementById('editConnIcon');
+  const msgEl = document.getElementById('editConnMsg');
+  el.className = 'conn-status ' + state;
+  spinner.style.display = state === 'testing' ? 'block' : 'none';
+  icon.className = 'ti ' + iconClass;
+  icon.style.display = (state === 'success' || state === 'error') ? 'block' : 'none';
+  msgEl.textContent = msg;
+}
+
+async function testEditConnection() {
+  const ip = document.getElementById('editIP').value.trim();
+  if (!ip) { document.getElementById('editIP').focus(); return; }
+  setEditConnStatus('testing', 'Connecting…', '');
+  try {
+    const data = await fetchFromProbe(ip);
+    setEditConnStatus('success', `Connected — moisture ${data.moisture}%`, 'ti-circle-check');
+  } catch(e) {
+    setEditConnStatus('error', 'Could not reach probe. Check IP and WiFi.', 'ti-circle-x');
+  }
+}
+
 function saveEdit() {
   const id = editingProbeId;
   const probe = probes.find(p => p.id === id);
   if (!probe) return;
   probe.name = document.getElementById('editName').value.trim() || probe.name;
   probe.variety = document.getElementById('editGrassType').value;
-  // Update thresholds based on variety
+  probe.ip = document.getElementById('editIP').value.trim() || probe.ip;
+  probe.pollInterval = editIntervalValue;
   const allTypes = [...GRASS_TYPES.lawn, ...GRASS_TYPES.plant];
   const found = allTypes.find(t => t.name === probe.variety);
   if (found) { probe.low = found.low; probe.high = found.high; probe.range = found.range; }
@@ -868,6 +1195,56 @@ function deleteProbe() {
   renderDashboard();
   renderProbeSettings();
   document.getElementById('editModal').classList.remove('active');
+}
+
+// =============================================
+// INTERVAL PICKER (drum-roll scroll)
+// =============================================
+function buildIntervalPicker(pickerId, labelId, currentValue) {
+  const picker = document.getElementById(pickerId);
+  const label = document.getElementById(labelId);
+  // rebuild items between the spacers
+  const spacers = picker.querySelectorAll('.interval-spacer');
+  // remove old items
+  while (picker.children.length > 2) {
+    picker.removeChild(picker.children[1]);
+  }
+  const frag = document.createDocumentFragment();
+  INTERVALS.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'interval-item' + (item.value === currentValue ? ' selected' : '');
+    div.textContent = item.label;
+    div.dataset.value = item.value;
+    div.dataset.label = item.label;
+    frag.appendChild(div);
+  });
+  picker.insertBefore(frag, spacers[1]);
+
+  // scroll to current
+  const idx = INTERVALS.findIndex(i => i.value === currentValue);
+  const targetScroll = idx * 44;
+  picker.scrollTop = targetScroll;
+
+  if (pickerId === 'editIntervalPicker') {
+    editIntervalValue = currentValue;
+  }
+  if (label) label.textContent = formatInterval(currentValue);
+
+  // scroll listener — debounced snap read
+  let scrollTimer;
+  picker.onscroll = () => {
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+      const idx = Math.round(picker.scrollTop / 44);
+      const clamped = Math.max(0, Math.min(INTERVALS.length - 1, idx));
+      const item = INTERVALS[clamped];
+      picker.querySelectorAll('.interval-item').forEach((el, i) => {
+        el.classList.toggle('selected', i === clamped);
+      });
+      if (pickerId === 'editIntervalPicker') editIntervalValue = item.value;
+      if (label) label.textContent = item.label;
+    }, 80);
+  };
 }
 
 // =============================================
@@ -927,7 +1304,7 @@ function renderProbeSettings() {
       <div class="setting-icon" style="background:rgba(45,122,53,0.15);">🌿</div>
       <div class="setting-content">
         <div class="setting-title">${p.name}</div>
-        <div class="setting-desc">${p.variety} · ${p.moisture !== undefined ? p.moisture+'%' : 'Waiting for reading'}</div>
+        <div class="setting-desc">${p.variety} · ${p.moisture !== undefined ? p.moisture+'%' : 'Waiting for reading'} · every ${formatInterval(p.pollInterval||900)}</div>
       </div>
       <div class="edit-btn" onclick="openEditModal('${p.id}')">
         <i class="ti ti-pencil" aria-hidden="true"></i>
