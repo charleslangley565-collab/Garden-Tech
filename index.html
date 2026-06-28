@@ -32,6 +32,7 @@ body {
   position: relative;
 }
 
+/* HEADER */
 .header {
   padding: 20px 20px 12px;
   display: flex;
@@ -59,6 +60,7 @@ body {
 }
 .icon-btn:hover { background: rgba(255,255,255,0.08); }
 
+/* STATUS */
 .status-bar {
   padding: 8px 20px;
   display: flex; align-items: center; gap: 6px;
@@ -69,9 +71,9 @@ body {
   width: 7px; height: 7px; background: #3ecf4a;
   border-radius: 50%; animation: pulse 2s infinite;
 }
-.status-dot.offline { background: #6b6b6b; animation: none; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
+/* TABS */
 .tabs {
   display: flex; padding: 12px 20px 0; gap: 4px;
   border-bottom: 0.5px solid rgba(255,255,255,0.08);
@@ -85,6 +87,7 @@ body {
 }
 .tab.active { color: #a8e6a3; border-bottom-color: #3ecf4a; background: rgba(62,207,74,0.06); }
 
+/* CONTENT */
 .content { padding: 16px 20px 100px; }
 .screen { display: none; }
 .screen.active { display: block; }
@@ -96,7 +99,10 @@ body {
 }
 .section-label:first-child { margin-top: 0; }
 
-.empty-state { text-align: center; padding: 60px 20px; }
+/* EMPTY STATE */
+.empty-state {
+  text-align: center; padding: 60px 20px;
+}
 .empty-icon {
   width: 72px; height: 72px; border-radius: 18px;
   background: #142316; border: 0.5px solid rgba(62,207,74,0.15);
@@ -106,6 +112,7 @@ body {
 .empty-title { font-size: 18px; font-weight: 600; color: #d4eed4; margin-bottom: 8px; }
 .empty-sub { font-size: 14px; color: #6b9e6e; line-height: 1.5; margin-bottom: 28px; }
 
+/* PROBE CARD */
 .probe-card {
   background: #142316;
   border: 0.5px solid rgba(255,255,255,0.08);
@@ -120,9 +127,13 @@ body {
 }
 .probe-name { font-size: 14px; font-weight: 600; color: #d4eed4; }
 .probe-type { font-size: 11px; color: #6b9e6e; margin-top: 2px; }
+
 .probe-actions { display: flex; gap: 8px; align-items: center; }
 
-.probe-badge { font-size: 11px; font-weight: 500; padding: 4px 9px; border-radius: 20px; }
+.probe-badge {
+  font-size: 11px; font-weight: 500;
+  padding: 4px 9px; border-radius: 20px;
+}
 .badge-good { background: rgba(62,207,74,0.15); color: #3ecf4a; }
 .badge-dry { background: rgba(239,143,39,0.15); color: #ef8f27; }
 .badge-wet { background: rgba(56,138,221,0.15); color: #389add; }
@@ -144,7 +155,6 @@ body {
   line-height: 1; margin-bottom: 2px;
 }
 .moisture-pct span { font-size: 14px; color: #6b9e6e; }
-.moisture-pct.offline { color: #6b6b6b; }
 
 .moisture-scale { position: relative; height: 28px; margin-bottom: 8px; }
 .scale-track {
@@ -154,6 +164,12 @@ body {
     #8B4513 0%, #c4813a 15%, #d4a952 28%,
     #4a9e4a 38%, #2d7a35 55%,
     #1a5e8a 72%, #0d3d6b 90%, #0a2a52 100%);
+}
+.scale-ideal {
+  position: absolute; top: 0; left: 35%; width: 32%; height: 100%;
+  background: rgba(62,207,74,0.25);
+  border-left: 1.5px solid rgba(62,207,74,0.6);
+  border-right: 1.5px solid rgba(62,207,74,0.6);
 }
 .scale-needle {
   position: absolute; top: 50%; transform: translate(-50%,-50%);
@@ -173,16 +189,7 @@ body {
 .meta-item { font-size: 11px; color: #6b9e6e; }
 .meta-item strong { display: block; color: #a8c9a8; font-weight: 500; font-size: 12px; }
 
-.conn-pill {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 10px; color: #4a7a4e; margin-top: 8px;
-}
-.conn-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: #4a7a4e; }
-.conn-pill.live .dot { background: #3ecf4a; }
-.conn-pill.live { color: #6b9e6e; }
-.conn-pill.error .dot { background: #ef8f27; }
-.conn-pill.error { color: #ef8f27; }
-
+/* BUTTONS */
 .primary-btn {
   width: 100%; padding: 15px;
   background: #2d7a35; border: none; border-radius: 12px;
@@ -191,7 +198,6 @@ body {
   cursor: pointer; transition: background 0.15s; margin-top: 8px;
 }
 .primary-btn:hover { background: #3a9645; }
-.primary-btn:disabled { background: #1e3a20; color: #4a7a4e; cursor: not-allowed; }
 
 .secondary-btn {
   width: 100%; padding: 14px;
@@ -224,6 +230,7 @@ body {
 }
 .delete-btn:hover { background: rgba(162,45,45,0.2); }
 
+/* ACTIVITY */
 .activity-list {
   background: #142316;
   border: 0.5px solid rgba(255,255,255,0.08);
@@ -239,6 +246,7 @@ body {
 .activity-text { font-size: 13px; color: #a8c9a8; flex: 1; }
 .activity-time { font-size: 11px; color: #4a7a4e; font-family: 'DM Mono', monospace; white-space: nowrap; }
 
+/* PAIR FLOW */
 .pair-step { display: none; animation: fadeIn 0.3s ease; }
 .pair-step.active { display: block; }
 @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
@@ -304,21 +312,7 @@ body {
 }
 @keyframes spin { to{transform:rotate(360deg)} }
 
-.connect-result {
-  background: #142316; border: 0.5px solid rgba(255,255,255,0.08);
-  border-radius: 12px; padding: 16px; margin-bottom: 16px;
-  font-size: 13px; color: #a8c9a8; display: none;
-}
-.connect-result.show { display: block; }
-.connect-result.success { border-color: rgba(62,207,74,0.3); }
-.connect-result.fail { border-color: rgba(239,143,39,0.3); }
-
-.help-box {
-  background: rgba(56,138,221,0.08); border: 0.5px solid rgba(56,138,221,0.2);
-  border-radius: 10px; padding: 12px; margin-top: 16px;
-  font-size: 12px; color: #8ab8e0; line-height: 1.5;
-}
-
+/* EDIT MODAL */
 .modal-overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.7);
@@ -331,12 +325,15 @@ body {
   background: #142316; border-radius: 20px 20px 0 0;
   padding: 24px 20px 40px; width: 100%; max-width: 430px;
   transform: translateY(20px); transition: transform 0.2s;
-  max-height: 85vh; overflow-y: auto;
 }
 .modal-overlay.active .modal { transform: translateY(0); }
 .modal-title { font-size: 16px; font-weight: 600; color: #d4eed4; margin-bottom: 20px; }
-.modal-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 0 auto 20px; }
+.modal-handle {
+  width: 36px; height: 4px; background: rgba(255,255,255,0.15);
+  border-radius: 2px; margin: 0 auto 20px;
+}
 
+/* SETTINGS */
 .setting-item {
   display: flex; align-items: center; gap: 12px;
   padding: 12px; background: #142316;
@@ -365,6 +362,7 @@ body {
 }
 .toggle.on .toggle-knob { left: 21px; background: #a8e6a3; }
 
+/* HISTORY */
 .detail-panel {
   background: #142316; border: 0.5px solid rgba(255,255,255,0.08);
   border-radius: 14px; padding: 16px; margin-bottom: 12px;
@@ -372,6 +370,7 @@ body {
 .detail-panel h3 { font-size: 13px; font-weight: 500; color: #6b9e6e; margin-bottom: 12px; }
 .chart-container { height: 100px; position: relative; }
 
+/* BOTTOM NAV */
 .bottom-nav {
   position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
   width: 430px; max-width: 100%;
@@ -407,7 +406,7 @@ body {
   </div>
 
   <div class="status-bar">
-    <div class="status-dot" id="statusDot"></div>
+    <div class="status-dot"></div>
     <span id="statusText">Ready · No probes connected</span>
   </div>
 
@@ -464,15 +463,14 @@ body {
           <div class="dot" id="dot2"></div>
           <div class="dot" id="dot3"></div>
           <div class="dot" id="dot4"></div>
-          <div class="dot" id="dot5"></div>
         </div>
 
         <!-- Step 0: Power on -->
         <div class="pair-step active" id="step0">
           <div class="pair-illustration">🔌</div>
           <div class="pair-title">Power on your probe</div>
-          <div class="pair-sub">Plug your Garden Tech probe into a powerbank or USB power. Wait for it to finish starting up (about 5 seconds).</div>
-          <button class="primary-btn" onclick="goStep(1)">It's powered on →</button>
+          <div class="pair-sub">Plug your Garden Tech probe into a powerbank or USB power. Hold the button for 3 seconds until the LED flashes green.</div>
+          <button class="primary-btn" onclick="goStep(1)">LED is flashing green →</button>
         </div>
 
         <!-- Step 1: Name your probe -->
@@ -509,29 +507,10 @@ body {
           <button class="primary-btn" id="typeNextBtn" disabled onclick="goStep(4)">Next →</button>
         </div>
 
-        <!-- Step 4: Connect to probe -->
+        <!-- Step 4: Confirm & add -->
         <div class="pair-step" id="step4">
           <button class="back-btn" onclick="goStep(3)"><i class="ti ti-arrow-left" style="font-size:15px"></i> Back</button>
-          <div class="pair-illustration">📡</div>
-          <div class="pair-title">Connect to your probe</div>
-          <div class="pair-sub">Enter your probe's IP address. You'll find this in the Arduino Serial Monitor after it connects to your WiFi — it looks like <strong style="color:#a8c9a8">192.168.1.107</strong></div>
-
-          <div class="field-label">Probe IP address</div>
-          <input type="text" class="field-input" id="probeIP" placeholder="e.g. 192.168.1.107" inputmode="decimal">
-
-          <button class="primary-btn" onclick="testConnection()" id="testBtn">Test connection →</button>
-
-          <div class="connect-result" id="connectResult"></div>
-
-          <div class="help-box">
-            <strong>First time setting up this probe?</strong><br>
-            If your probe hasn't joined your WiFi yet, connect your phone to the <strong>GardenTech-Setup</strong> WiFi network (password: gardentech) and go to 192.168.4.1 in Safari first, then come back here once it's joined your home WiFi.
-          </div>
-        </div>
-
-        <!-- Step 5: Confirm & add -->
-        <div class="pair-step" id="step5">
-          <div class="pair-illustration" id="confirmIcon">✅</div>
+          <div class="pair-illustration">✅</div>
           <div class="pair-title" id="confirmTitle">Ready to add</div>
           <div class="pair-sub" id="confirmSub">Your probe is configured and ready.</div>
           <div style="background:#142316;border:0.5px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;margin-bottom:16px;">
@@ -543,13 +522,9 @@ body {
               <span style="font-size:13px;color:#6b9e6e;">Type</span>
               <span style="font-size:13px;color:#d4eed4;font-weight:500;" id="confirmType"></span>
             </div>
-            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;justify-content:space-between;padding:6px 0;">
               <span style="font-size:13px;color:#6b9e6e;">Ideal range</span>
               <span style="font-size:13px;color:#3ecf4a;font-weight:500;" id="confirmRange"></span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:6px 0;">
-              <span style="font-size:13px;color:#6b9e6e;">IP address</span>
-              <span style="font-size:13px;color:#d4eed4;font-weight:500;" id="confirmIP"></span>
             </div>
           </div>
           <button class="primary-btn" onclick="addProbe()">Add to dashboard →</button>
@@ -560,24 +535,20 @@ body {
 
     <!-- SETTINGS -->
     <div class="screen" id="screen-settings">
-      <div class="section-label">Telegram Notifications</div>
-      <div class="setting-item">
-        <div class="setting-icon" style="background:rgba(56,138,221,0.12);">📱</div>
-        <div class="setting-content">
-          <div class="setting-title">Telegram alerts</div>
-          <div class="setting-desc">Sent directly by your probe — independent of this app</div>
-        </div>
-      </div>
-      <div class="help-box" style="margin-bottom:8px;">
-        Your probe sends Telegram messages on its own whenever it connects to WiFi, detects a sprinkler, or sends a scheduled reading. This works even if the app is closed. To change Telegram settings, update the bot token and chat ID in the Arduino code.
-      </div>
-
-      <div class="section-label">App Notifications</div>
+      <div class="section-label">Notifications</div>
       <div class="setting-item">
         <div class="setting-icon" style="background:rgba(239,143,39,0.12);">🌵</div>
         <div class="setting-content">
           <div class="setting-title">Dry alerts</div>
           <div class="setting-desc">Notify when moisture drops below ideal</div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+      </div>
+      <div class="setting-item">
+        <div class="setting-icon" style="background:rgba(56,138,221,0.12);">🚿</div>
+        <div class="setting-content">
+          <div class="setting-title">Sprinkler detected</div>
+          <div class="setting-desc">Confirm when automatic watering runs</div>
         </div>
         <div class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
       </div>
@@ -625,9 +596,7 @@ body {
     <input type="hidden" id="editProbeId">
     <div class="field-label">Probe name</div>
     <input type="text" class="field-input" id="editName" placeholder="Probe name">
-    <div class="field-label">Probe IP address</div>
-    <input type="text" class="field-input" id="editIP" placeholder="192.168.1.107">
-    <div class="field-label">Grass / plant type</div>
+    <div class="field-label" style="margin-top:14px;">Grass / plant type</div>
     <select class="field-input" id="editGrassType" style="appearance:none;">
       <option value="Buffalo">Buffalo (Ideal 40–65%)</option>
       <option value="Couch">Couch (Ideal 35–60%)</option>
@@ -640,8 +609,6 @@ body {
       <option value="Native">Native plant (Ideal 30–50%)</option>
       <option value="General">General (Ideal 40–60%)</option>
     </select>
-    <button class="primary-btn" onclick="testEditConnection()">Test connection</button>
-    <div class="connect-result" id="editConnectResult"></div>
     <button class="primary-btn" onclick="saveEdit()">Save changes</button>
     <button class="delete-btn" onclick="deleteProbe()">Remove probe</button>
   </div>
@@ -657,8 +624,6 @@ let pairStep = 0;
 let selectedType = null;
 let selectedVariety = null;
 let editingProbeId = null;
-let testedIP = null;
-let pollInterval = null;
 
 const GRASS_TYPES = {
   lawn: [
@@ -694,57 +659,6 @@ function switchTab(tab) {
 }
 
 // =============================================
-// FETCH LIVE DATA FROM PROBE
-// =============================================
-async function fetchProbeData(ip, timeoutMs = 4000) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(`http://${ip}/data`, { signal: controller.signal });
-    clearTimeout(timeout);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data; // { raw, moisture }
-  } catch (e) {
-    clearTimeout(timeout);
-    return null;
-  }
-}
-
-async function pollAllProbes() {
-  if (probes.length === 0) return;
-  let anyOnline = false;
-  for (const p of probes) {
-    const data = await fetchProbeData(p.ip);
-    if (data) {
-      anyOnline = true;
-      const prevMoisture = p.moisture;
-      p.moisture = data.moisture;
-      p.raw = data.raw;
-      p.online = true;
-      p.lastRead = new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
-      if (prevMoisture !== undefined && Math.abs(data.moisture - prevMoisture) >= 15) {
-        addActivity(`${p.name} moisture changed to ${data.moisture}%`, '#389add', p.lastRead);
-      }
-    } else {
-      p.online = false;
-    }
-  }
-  saveProbes();
-  renderDashboard();
-  document.getElementById('statusDot').classList.toggle('offline', !anyOnline);
-  document.getElementById('statusText').textContent = anyOnline
-    ? `Live · ${probes.length} probe${probes.length>1?'s':''} connected`
-    : `Offline · Check you're on the same WiFi as your probe(s)`;
-}
-
-function startPolling() {
-  if (pollInterval) clearInterval(pollInterval);
-  pollAllProbes();
-  pollInterval = setInterval(pollAllProbes, 20000);
-}
-
-// =============================================
 // DASHBOARD
 // =============================================
 function renderDashboard() {
@@ -759,28 +673,25 @@ function renderDashboard() {
     addBtn.style.display = 'none';
     activitySection.style.display = 'none';
     document.getElementById('statusText').textContent = 'Ready · No probes connected';
-    document.getElementById('statusDot').classList.add('offline');
     return;
   }
 
   empty.style.display = 'none';
   addBtn.style.display = 'block';
+  document.getElementById('statusText').textContent = `Live · ${probes.length} probe${probes.length>1?'s':''} connected`;
 
   list.innerHTML = probes.map((p, i) => {
-    const hasReading = p.moisture !== undefined && p.moisture !== null;
-    const pct = hasReading ? p.moisture : '--';
-    const needleLeft = hasReading ? p.moisture : 50;
+    const pct = p.moisture !== undefined ? p.moisture : '--';
+    const needleLeft = p.moisture !== undefined ? p.moisture : 50;
     const idealLeft = Math.max(0, Math.min(100, p.low)) + '%';
     const idealWidth = (p.high - p.low) + '%';
     let badgeClass = 'badge-offline';
-    let badgeText = p.online ? 'Waiting' : 'Offline';
-    if (hasReading && p.online) {
+    let badgeText = 'Waiting';
+    if (p.moisture !== undefined) {
       if (p.moisture < p.low) { badgeClass = 'badge-dry'; badgeText = 'Dry'; }
       else if (p.moisture > p.high) { badgeClass = 'badge-wet'; badgeText = 'Wet'; }
       else { badgeClass = 'badge-good'; badgeText = 'Ideal'; }
     }
-    const connClass = p.online ? 'live' : 'error';
-    const connText = p.online ? `Connected · ${p.ip}` : `Can't reach probe at ${p.ip}`;
     return `
     <div class="probe-card ${i===0?'selected':''}" id="probeCard${p.id}">
       <div class="probe-header">
@@ -795,7 +706,7 @@ function renderDashboard() {
           </div>
         </div>
       </div>
-      <div class="moisture-pct ${!p.online?'offline':''}"><span id="pctDisplay${p.id}">${pct}</span><span>%</span></div>
+      <div class="moisture-pct"><span id="pctDisplay${p.id}">${pct}</span><span>%</span></div>
       <div class="moisture-scale">
         <div class="scale-track">
           <div style="position:absolute;top:0;left:${idealLeft};width:${idealWidth};height:100%;background:rgba(62,207,74,0.25);border-left:1.5px solid rgba(62,207,74,0.6);border-right:1.5px solid rgba(62,207,74,0.6);"></div>
@@ -804,13 +715,14 @@ function renderDashboard() {
       </div>
       <div class="scale-labels"><span>Dry</span><span>Ideal zone</span><span>Wet</span></div>
       <div class="probe-meta">
-        <div class="meta-item"><strong>${p.lastRead || 'Never'}</strong>Last reading</div>
-        <div class="meta-item"><strong>Every 20 sec</strong>Frequency</div>
+        <div class="meta-item"><strong id="trendDisplay${p.id}" style="color:#6b9e6e">— Waiting</strong>Trend</div>
+        <div class="meta-item"><strong id="lastReadDisplay${p.id}">${p.lastRead || 'Never'}</strong>Last reading</div>
+        <div class="meta-item"><strong>Every 15 min</strong>Frequency</div>
       </div>
-      <div class="conn-pill ${connClass}"><div class="dot"></div>${connText}</div>
     </div>`;
   }).join('');
 
+  // Activity
   if (activity.length > 0) {
     activitySection.style.display = 'block';
     document.getElementById('activityList').innerHTML = activity.slice(0,5).map(a => `
@@ -829,16 +741,12 @@ function resetPair() {
   pairStep = 0;
   selectedType = null;
   selectedVariety = null;
-  testedIP = null;
   document.querySelectorAll('.pair-step').forEach(s => s.classList.remove('active'));
   document.getElementById('step0').classList.add('active');
   updateDots(0);
   document.getElementById('probeName').value = '';
-  document.getElementById('probeIP').value = '';
   document.getElementById('typeNextBtn').disabled = true;
   document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
-  document.getElementById('connectResult').className = 'connect-result';
-  document.getElementById('connectResult').innerHTML = '';
 }
 
 function goStep(n) {
@@ -849,7 +757,7 @@ function goStep(n) {
 }
 
 function updateDots(n) {
-  for (let i=0;i<6;i++) {
+  for (let i=0;i<5;i++) {
     const d = document.getElementById('dot'+i);
     d.classList.toggle('active', i===n);
     d.classList.toggle('done', i<n);
@@ -887,55 +795,15 @@ function selectVariety(name, range, low, high) {
     b.classList.toggle('selected', b.querySelector('.grass-name').textContent === name);
   });
   document.getElementById('typeNextBtn').disabled = false;
-}
-
-function isValidIP(ip) {
-  return /^(\d{1,3}\.){3}\d{1,3}$/.test(ip);
-}
-
-async function testConnection() {
-  const ip = document.getElementById('probeIP').value.trim();
-  const resultEl = document.getElementById('connectResult');
-  const btn = document.getElementById('testBtn');
-
-  if (!isValidIP(ip)) {
-    resultEl.className = 'connect-result show fail';
-    resultEl.innerHTML = '⚠️ Please enter a valid IP address, e.g. 192.168.1.107';
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Connecting...';
-  resultEl.className = 'connect-result show';
-  resultEl.innerHTML = '<div class="spinner" style="width:24px;height:24px;margin:0 auto 8px;"></div>Looking for your probe...';
-
-  const data = await fetchProbeData(ip, 5000);
-
-  btn.disabled = false;
-  btn.textContent = 'Test connection →';
-
-  if (data) {
-    testedIP = ip;
-    resultEl.className = 'connect-result show success';
-    resultEl.innerHTML = `✅ Probe found! Currently reading ${data.moisture}% moisture (raw: ${data.raw}).`;
-    document.getElementById('confirmName').textContent = document.getElementById('probeName').value.trim();
-    document.getElementById('confirmType').textContent = selectedVariety.name;
-    document.getElementById('confirmRange').textContent = selectedVariety.range;
-    document.getElementById('confirmIP').textContent = ip;
-    document.getElementById('confirmIcon').textContent = '✅';
-    document.getElementById('confirmTitle').textContent = 'Ready to add';
-    document.getElementById('confirmSub').textContent = `Your probe is online and ready to be added to your dashboard.`;
-    setTimeout(() => goStep(5), 900);
-  } else {
-    testedIP = null;
-    resultEl.className = 'connect-result show fail';
-    resultEl.innerHTML = `⚠️ Couldn't reach a probe at ${ip}. Make sure your phone is on the same WiFi network as your probe, and double check the IP address from Serial Monitor.`;
-  }
+  // Update confirm screen
+  const probeName = document.getElementById('probeName').value.trim();
+  document.getElementById('confirmName').textContent = probeName;
+  document.getElementById('confirmType').textContent = name;
+  document.getElementById('confirmRange').textContent = range;
 }
 
 function addProbe() {
   const name = document.getElementById('probeName').value.trim();
-  const ip = document.getElementById('probeIP').value.trim();
   const probe = {
     id: Date.now().toString(),
     name,
@@ -944,18 +812,15 @@ function addProbe() {
     low: selectedVariety.low,
     high: selectedVariety.high,
     range: selectedVariety.range,
-    ip: ip,
     moisture: undefined,
-    online: false,
     lastRead: null,
     addedAt: new Date().toLocaleTimeString('en-AU', {hour:'2-digit',minute:'2-digit'})
   };
   probes.push(probe);
   saveProbes();
-  addActivity(`${name} paired at ${ip}`, '#3ecf4a', probe.addedAt);
+  addActivity(`${name} paired and online`, '#3ecf4a', probe.addedAt);
   renderDashboard();
   switchTab('dashboard');
-  startPolling();
 }
 
 // =============================================
@@ -967,10 +832,7 @@ function openEditModal(id) {
   editingProbeId = id;
   document.getElementById('editProbeId').value = id;
   document.getElementById('editName').value = probe.name;
-  document.getElementById('editIP').value = probe.ip || '';
   document.getElementById('editGrassType').value = probe.variety;
-  document.getElementById('editConnectResult').className = 'connect-result';
-  document.getElementById('editConnectResult').innerHTML = '';
   document.getElementById('editModal').classList.add('active');
 }
 
@@ -980,33 +842,13 @@ function closeEditModal(e) {
   }
 }
 
-async function testEditConnection() {
-  const ip = document.getElementById('editIP').value.trim();
-  const resultEl = document.getElementById('editConnectResult');
-  if (!isValidIP(ip)) {
-    resultEl.className = 'connect-result show fail';
-    resultEl.innerHTML = '⚠️ Please enter a valid IP address';
-    return;
-  }
-  resultEl.className = 'connect-result show';
-  resultEl.innerHTML = 'Testing...';
-  const data = await fetchProbeData(ip, 5000);
-  if (data) {
-    resultEl.className = 'connect-result show success';
-    resultEl.innerHTML = `✅ Connected! Reading ${data.moisture}% moisture.`;
-  } else {
-    resultEl.className = 'connect-result show fail';
-    resultEl.innerHTML = `⚠️ Couldn't reach a probe at ${ip}.`;
-  }
-}
-
 function saveEdit() {
   const id = editingProbeId;
   const probe = probes.find(p => p.id === id);
   if (!probe) return;
   probe.name = document.getElementById('editName').value.trim() || probe.name;
-  probe.ip = document.getElementById('editIP').value.trim() || probe.ip;
   probe.variety = document.getElementById('editGrassType').value;
+  // Update thresholds based on variety
   const allTypes = [...GRASS_TYPES.lawn, ...GRASS_TYPES.plant];
   const found = allTypes.find(t => t.name === probe.variety);
   if (found) { probe.low = found.low; probe.high = found.high; probe.range = found.range; }
@@ -1014,7 +856,6 @@ function saveEdit() {
   renderDashboard();
   document.getElementById('editModal').classList.remove('active');
   addActivity(`${probe.name} settings updated`, '#6b9e6e', new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'}));
-  startPolling();
 }
 
 function deleteProbe() {
@@ -1033,15 +874,6 @@ function deleteProbe() {
 // HISTORY
 // =============================================
 let chartsInited = {};
-let historyData = JSON.parse(localStorage.getItem('gt_history') || '{}');
-
-function recordHistoryPoint(probeId, moisture) {
-  if (!historyData[probeId]) historyData[probeId] = [];
-  historyData[probeId].push({ t: Date.now(), v: moisture });
-  if (historyData[probeId].length > 200) historyData[probeId] = historyData[probeId].slice(-200);
-  localStorage.setItem('gt_history', JSON.stringify(historyData));
-}
-
 function renderHistory() {
   if (probes.length === 0) {
     document.getElementById('historyEmpty').style.display = 'block';
@@ -1055,24 +887,21 @@ function renderHistory() {
     <div class="detail-panel">
       <h3>${p.name} — ${p.variety}</h3>
       <div class="chart-container">
-        <canvas id="chart_${p.id}" role="img" aria-label="Moisture history for ${p.name}">Moisture history.</canvas>
+        <canvas id="chart_${p.id}" role="img" aria-label="24 hour moisture history for ${p.name}">Moisture history.</canvas>
       </div>
     </div>`).join('');
-
   probes.forEach(p => {
-    const points = historyData[p.id] || [];
-    const labels = points.map(pt => new Date(pt.t).toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'}));
-    const data = points.map(pt => pt.v);
-
-    if (chartsInited[p.id]) {
-      chartsInited[p.id].data.labels = labels;
-      chartsInited[p.id].data.datasets[0].data = data;
-      chartsInited[p.id].update();
-      return;
-    }
-    chartsInited[p.id] = new Chart(document.getElementById('chart_'+p.id), {
+    if (chartsInited[p.id]) return;
+    chartsInited[p.id] = true;
+    const hours = [];
+    for (let i=23;i>=0;i--) hours.push(i===0?'Now':i+'h');
+    const data = Array.from({length:24},(_,i) => {
+      const base = p.moisture || 45;
+      return Math.max(5,Math.min(95, base + Math.sin(i/3)*15 + (Math.random()-0.5)*8));
+    });
+    new Chart(document.getElementById('chart_'+p.id), {
       type:'line',
-      data:{ labels, datasets:[{data,borderColor:'#3ecf4a',borderWidth:2,pointRadius:0,fill:true,backgroundColor:'#3ecf4a18',tension:0.4}]},
+      data:{ labels:hours, datasets:[{data,borderColor:'#3ecf4a',borderWidth:2,pointRadius:0,fill:true,backgroundColor:'#3ecf4a18',tension:0.4}]},
       options:{
         responsive:true, maintainAspectRatio:false,
         plugins:{legend:{display:false}},
@@ -1098,7 +927,7 @@ function renderProbeSettings() {
       <div class="setting-icon" style="background:rgba(45,122,53,0.15);">🌿</div>
       <div class="setting-content">
         <div class="setting-title">${p.name}</div>
-        <div class="setting-desc">${p.variety} · ${p.ip || 'No IP set'} · ${p.online ? (p.moisture+'%') : 'Offline'}</div>
+        <div class="setting-desc">${p.variety} · ${p.moisture !== undefined ? p.moisture+'%' : 'Waiting for reading'}</div>
       </div>
       <div class="edit-btn" onclick="openEditModal('${p.id}')">
         <i class="ti ti-pencil" aria-hidden="true"></i>
@@ -1120,22 +949,12 @@ function addActivity(text, color, time) {
 // =============================================
 function saveProbes() {
   localStorage.setItem('gt_probes', JSON.stringify(probes));
-  probes.forEach(p => {
-    if (p.moisture !== undefined && p.moisture !== null) {
-      recordHistoryPoint(p.id, p.moisture);
-    }
-  });
 }
 
 // =============================================
 // INIT
 // =============================================
 renderDashboard();
-if (probes.length > 0) startPolling();
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
 </script>
 </body>
 </html>

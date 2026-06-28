@@ -1,4 +1,4 @@
-const CACHE = 'gardentech-v2';
+const CACHE = 'gardentech-v1';
 const ASSETS = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', e => {
