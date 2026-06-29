@@ -659,20 +659,23 @@ body {
           <button class="primary-btn" id="typeNextBtn" disabled onclick="goStep(4)">Next →</button>
         </div>
 
-        <!-- Step 4: Enter IP + test connection -->
+        <!-- Step 4: Discover probe via Supabase -->
         <div class="pair-step" id="step4">
           <button class="back-btn" onclick="goStep(3)"><i class="ti ti-arrow-left" style="font-size:15px"></i> Back</button>
-          <div class="pair-title">Connect to your probe</div>
-          <div class="pair-sub">Enter the IP address you found earlier. The app will verify it can reach your probe.</div>
-          <div class="field-label">Probe IP address</div>
-          <input type="text" class="field-input" id="probeIP" placeholder="e.g. 192.168.1.107" inputmode="decimal">
+          <div class="pair-illustration">📡</div>
+          <div class="pair-title">Find your probe</div>
+          <div class="pair-sub">Make sure your probe is powered on and connected to your home WiFi, then tap Search.</div>
           <div class="conn-status idle" id="connStatus">
             <div class="spinner-sm" id="connSpinner" style="display:none;"></div>
             <i class="ti ti-circle-check" id="connIcon" style="font-size:18px;display:none;"></i>
             <span id="connMsg"></span>
           </div>
-          <button class="primary-btn" id="testConnBtn" onclick="testConnectionStep()">Test connection →</button>
-          <button class="primary-btn" id="skipConnBtn" onclick="goStep(5)" style="display:none;background:#1e3a20;color:#6b9e6e;margin-top:6px;">Continue →</button>
+          <button class="primary-btn" id="testConnBtn" onclick="discoverProbeStep()">Search for my probe →</button>
+          <button class="primary-btn" id="skipConnBtn" onclick="goStep(5)" style="display:none;margin-top:6px;">Continue →</button>
+          <div style="margin-top:20px;padding-top:16px;border-top:0.5px solid rgba(255,255,255,0.06);">
+            <div style="font-size:12px;color:#4a7a4e;margin-bottom:6px;">Probe IP address <span style="color:#2a4a2e;">(optional)</span></div>
+            <input type="text" class="field-input" id="probeIP" placeholder="e.g. 192.168.1.100" inputmode="decimal">
+          </div>
         </div>
 
         <!-- Step 5: Confirm & add -->
@@ -815,6 +818,26 @@ body {
 </div>
 
 <script>
+// =============================================
+// SUPABASE
+// =============================================
+const SUPABASE_URL = 'https://umxwirxhdqnoquumuwtq.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_TnPbe7dEyTv-Wmxf9evrJA_RKb3IwGe';
+
+async function fetchLatestFromSupabase(probeId) {
+  const url = `${SUPABASE_URL}/rest/v1/readings?probe_id=eq.${encodeURIComponent(probeId)}&order=created_at.desc&limit=1`;
+  const res = await fetch(url, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`
+    }
+  });
+  if (!res.ok) throw new Error('Supabase error ' + res.status);
+  const data = await res.json();
+  if (!data || data.length === 0) throw new Error('No readings yet');
+  return data[0]; // { moisture, raw, status, created_at }
+}
+
 // =============================================
 // STATE
 // =============================================
@@ -1035,7 +1058,7 @@ function selectVariety(name, range, low, high) {
 }
 
 // =============================================
-// CONNECTION TEST (PAIR FLOW)
+// PROBE DISCOVERY VIA SUPABASE (PAIR FLOW)
 // =============================================
 function setConnStatus(state, msg, iconClass) {
   const el = document.getElementById('connStatus');
@@ -1049,55 +1072,71 @@ function setConnStatus(state, msg, iconClass) {
   msgEl.textContent = msg;
 }
 
-async function testConnectionStep() {
-  const ip = document.getElementById('probeIP').value.trim();
-  if (!ip) { document.getElementById('probeIP').focus(); return; }
-
-  const btn = document.getElementById('testConnBtn');
+async function discoverProbeStep() {
+  const btn     = document.getElementById('testConnBtn');
   const skipBtn = document.getElementById('skipConnBtn');
-  btn.disabled = true;
-  btn.textContent = 'Testing…';
-  setConnStatus('testing', 'Connecting to probe…', '');
+  btn.disabled  = true;
+  btn.textContent = 'Searching…';
+  setConnStatus('testing', 'Looking for your probe…', '');
 
-  try {
-    const data = await fetchFromProbe(ip);
-    setConnStatus('success', `Connected — moisture ${data.moisture}%`, 'ti-circle-check');
-    connectionVerified = true;
-    btn.textContent = 'Connected ✓';
-    // populate confirm screen
-    const name = document.getElementById('probeName').value.trim();
-    document.getElementById('confirmName').textContent = name;
-    document.getElementById('confirmType').textContent = selectedVariety ? selectedVariety.name : '—';
-    document.getElementById('confirmRange').textContent = selectedVariety ? selectedVariety.range : '—';
-    document.getElementById('confirmIP').textContent = ip;
-    skipBtn.style.display = 'block';
-    skipBtn.textContent = 'Continue →';
-    skipBtn.style.background = '#2d7a35';
-    skipBtn.style.color = '#a8e6a3';
-  } catch(e) {
-    setConnStatus('error', 'Could not reach probe. Check the IP and that your phone is on the same WiFi.', 'ti-circle-x');
-    btn.disabled = false;
-    btn.textContent = 'Retry →';
-  }
-}
+  // Try up to 3 times with 5-second gaps
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      // Find the most recent reading pushed in the last 10 minutes
+      const cutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const url = `${SUPABASE_URL}/rest/v1/readings?created_at=gte.${cutoff}&order=created_at.desc&limit=1`;
+      const res = await fetch(url, {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`
+        }
+      });
+      const data = await res.json();
 
-async function fetchFromProbe(ip) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 6000);
-  try {
-    const res = await fetch(`http://${ip}/data`, { signal: controller.signal });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error('bad status');
-    return await res.json();
-  } catch(e) {
-    clearTimeout(timeout);
-    throw e;
+      if (data && data.length > 0) {
+        const reading = data[0];
+        window._pendingProbeId = reading.probe_id;
+        const seenAgo = Math.round((Date.now() - new Date(reading.created_at)) / 1000);
+        const seenStr = seenAgo < 60 ? `${seenAgo}s ago` : `${Math.round(seenAgo/60)} min ago`;
+        setConnStatus('success', `Found your probe — moisture ${reading.moisture}% · seen ${seenStr}`, 'ti-circle-check');
+        connectionVerified = true;
+
+        // Populate confirm screen
+        const name = document.getElementById('probeName').value.trim();
+        document.getElementById('confirmName').textContent = name;
+        document.getElementById('confirmType').textContent = selectedVariety ? selectedVariety.name : '—';
+        document.getElementById('confirmRange').textContent = selectedVariety ? selectedVariety.range : '—';
+        document.getElementById('confirmIP').textContent = document.getElementById('probeIP').value.trim() || '—';
+
+        skipBtn.style.display = 'block';
+        skipBtn.textContent   = 'Continue →';
+        skipBtn.style.background = '#2d7a35';
+        skipBtn.style.color      = '#a8e6a3';
+        btn.textContent = 'Found ✓';
+        return;
+      }
+
+      // No reading yet — wait and retry
+      if (attempt < 3) {
+        setConnStatus('testing', `Waiting for probe… (attempt ${attempt}/3)`, '');
+        await new Promise(r => setTimeout(r, 5000));
+      }
+    } catch(e) {
+      console.warn('Discovery attempt', attempt, e);
+    }
   }
+
+  // All attempts failed
+  setConnStatus('error',
+    'Probe not found. Make sure it\'s powered on and connected to your home WiFi, then try again.',
+    'ti-circle-x');
+  btn.disabled    = false;
+  btn.textContent = 'Try again →';
 }
 
 function addProbe() {
   const name = document.getElementById('probeName').value.trim();
-  const ip = document.getElementById('probeIP').value.trim();
+  const ip   = document.getElementById('probeIP').value.trim();
   const probe = {
     id: Date.now().toString(),
     name,
@@ -1106,7 +1145,8 @@ function addProbe() {
     low: selectedVariety.low,
     high: selectedVariety.high,
     range: selectedVariety.range,
-    ip,
+    ip:      ip || '',
+    probeId: window._pendingProbeId || ip || '',
     pollInterval: 900,
     moisture: undefined,
     lastRead: null,
@@ -1329,9 +1369,45 @@ function saveProbes() {
 }
 
 // =============================================
+// LIVE POLLING (via Supabase)
+// =============================================
+async function pollAllProbes() {
+  if (probes.length === 0) return;
+  let anyUpdate = false;
+
+  for (const probe of probes) {
+    try {
+      const data = await fetchLatestFromSupabase(probe.probeId);
+      probe.moisture = data.moisture;
+      probe.raw      = data.raw;
+      probe.lastRead = new Date(data.created_at).toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit'});
+      anyUpdate = true;
+    } catch(e) {
+      // Supabase failed or no readings yet — leave last known value
+      console.warn('Poll failed for', probe.name, e.message);
+    }
+  }
+
+  if (anyUpdate) {
+    saveProbes();
+    renderDashboard();
+    renderProbeSettings();
+  }
+}
+
+let _pollTimer = null;
+function startPolling() {
+  pollAllProbes(); // immediate first poll
+  if (_pollTimer) clearInterval(_pollTimer);
+  // Poll Supabase every 30 seconds
+  _pollTimer = setInterval(pollAllProbes, 30000);
+}
+
+// =============================================
 // INIT
 // =============================================
 renderDashboard();
+startPolling();
 </script>
 </body>
 </html>
